@@ -1,0 +1,164 @@
+{
+  "name": "Morning Weather Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        -144
+      ],
+      "id": "282b0044-f67d-4ea3-b4a6-54f120c90ea0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=24.86&longitude=67.01&current_weather=true",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -336,
+        -144
+      ],
+      "id": "6f6c83bd-f7c6-4914-9181-63caf48d1514",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the weather data\nconst weather = $json.current_weather;\nconst temp = weather.temperature;\nconst code = weather.weathercode;\n\n// Map weather code to emoji\nlet emoji = \"☀️\";\nif ([45, 48].includes(code)) emoji = \"🌫️\";\nelse if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) emoji = \"🌧️\";\nelse if ([71, 73, 75, 77, 85, 86].includes(code)) emoji = \"❄️\";\nelse if ([95, 96, 99].includes(code)) emoji = \"⛈️\";\n\n// Prepare output\nreturn [\n  {\n    json: {\n      temperature: temp,\n      emoji,\n      message: `${emoji} Current temperature: ${temp}°C`,\n      subject: `${emoji} Today’s Weather Report`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -144
+      ],
+      "id": "ed66237e-e5c5-403a-b736-a659a5747240",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f01f1815-ff52-4c37-b4fc-b36a568446bd",
+              "name": "Subject",
+              "value": "={{$json.subject}}",
+              "type": "string"
+            },
+            {
+              "id": "8d646b40-2142-4806-a904-c53c6a068d13",
+              "name": "Body",
+              "value": "=Good morning! 🌅  \nHere’s today’s weather: \n{{$json.message}}  \nHave a great day! 🌞",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -144
+      ],
+      "id": "a1f38e3a-d08b-4efe-82ad-a7b612c3da49",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "lunabutler166@gmail.com",
+        "subject": "={{ $json.Subject }}",
+        "message": "={{ $json.Body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -144
+      ],
+      "id": "8445631f-493a-4986-9191-d0fa8d1f2b8b",
+      "name": "Send a message",
+      "webhookId": "dd02e86e-2aef-403b-9aca-a8be6b5a7998",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VLKjREyJg5gll9uA",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "71e28dad-50a6-462b-85ae-6112c239b222",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "31c604b343648f40010fc68a11f2ec89765f6cc440024c4c9a6e3460925350f4"
+  },
+  "id": "9HYhL1F8N3EMhpu1BB1CM",
+  "tags": []
+}
